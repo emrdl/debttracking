@@ -1,0 +1,29 @@
+[
+  {
+    "id": "551e8eab-fad6-4dc8-857b-cfc01df6e5ed",
+    "name": "Vakıf KMH",
+    "amount": 45000,
+    "dueDate": "2025-02-28T00:00:00.000Z",
+    "type": "other",
+    "createdAt": "2025-02-19T08:02:31.239Z",
+    "status": "active"
+  },
+  {
+    "id": "57218a27-c818-4504-8d4f-bf1961538135",
+    "name": "Halkbank KMH",
+    "amount": 75000,
+    "dueDate": "2025-02-28T00:00:00.000Z",
+    "type": "credit-card",
+    "createdAt": "2025-02-19T08:02:56.952Z",
+    "status": "active"
+  },
+  {
+    "id": "3b5413e4-f822-4f3a-afe9-56f8c00fe428",
+    "name": "Akbank",
+    "amount": 150000,
+    "dueDate": "2025-02-19T08:09:39.690Z",
+    "type": "credit-card",
+    "createdAt": "2025-02-19T08:10:25.581Z",
+    "status": "active"
+  }
+]
