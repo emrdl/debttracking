@@ -1,15 +1,13 @@
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
+import { sql } from '@vercel/postgres';
+import { drizzle } from 'drizzle-orm/vercel-postgres';
 import { debts } from './schema';
 
-// Yerel geliştirme için PostgreSQL bağlantısı
-const connectionString = process.env.POSTGRES_URL || 'postgres://postgres:postgres@localhost:5432/debt_tracker';
-const client = postgres(connectionString);
-export const db = drizzle(client);
+// Vercel PostgreSQL bağlantısı
+export const db = drizzle(sql);
 
 export async function createTable() {
   try {
-    await client`
+    await sql`
       CREATE TABLE IF NOT EXISTS debts (
         id SERIAL PRIMARY KEY,
         name VARCHAR(256) NOT NULL,
