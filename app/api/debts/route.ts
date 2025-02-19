@@ -1,34 +1,62 @@
 // app/api/debts/route.ts
 import { NextResponse } from 'next/server';
-import type { Debt } from 'types';
-import fs from 'fs/promises';
-import path from 'path';
-import { v4 as uuidv4 } from 'uuid';
+import { db } from '@/db';
+import { debts } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 
-const filePath = path.join(process.cwd(), 'debts.json');
-
-async function readDebts(): Promise<Debt[]> {
+export async function GET() {
   try {
-    const data = await fs.readFile(filePath, 'utf-8');
-    return JSON.parse(data);
+    const allDebts = await db.select().from(debts);
+    return NextResponse.json(allDebts);
   } catch (error) {
-    return [];
+    console.error('Error in GET:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
-export async function GET() {
-  const debts = await readDebts();
-  return NextResponse.json(debts);
-}
-
 export async function POST(request: Request) {
-  const body: Debt = await request.json();
-  const debts = await readDebts();
-  
-  const status = body.status === 'active' || body.status === 'paid' ? body.status : 'active';
-  const debtWithId: Debt = { ...body, id: uuidv4(), createdAt: new Date().toISOString(), status };
-  
-  debts.push(debtWithId);
-  await fs.writeFile(filePath, JSON.stringify(debts, null, 2));
-  return NextResponse.json(debtWithId);
+  try {
+    const body = await request.json();
+
+    // Validate required fields
+    if (!body.name?.trim() || !body.amount || !body.type?.trim() || !body.dueDate) {
+      return NextResponse.json(
+        { error: 'Lütfen tüm zorunlu alanları doldurun. İsim ve miktar boş olamaz.' },
+        { status: 400 }
+      );
+    }
+
+    // Validate amount is a valid number and greater than 0
+    const amount = parseFloat(body.amount);
+    if (isNaN(amount) || amount <= 0) {
+      return NextResponse.json(
+        { error: 'Miktar sıfırdan büyük geçerli bir sayı olmalıdır' },
+        { status: 400 }
+      );
+    }
+
+    // Validate date
+    const dueDate = new Date(body.dueDate);
+    if (isNaN(dueDate.getTime())) {
+      return NextResponse.json(
+        { error: 'Invalid due date format' },
+        { status: 400 }
+      );
+    }
+
+    const newDebt = await db.insert(debts).values({
+      name: body.name,
+      amount: amount.toString(), // Convert to string for DECIMAL type
+      type: body.type,
+      dueDate: dueDate
+    }).returning();
+
+    return NextResponse.json(newDebt[0]);
+  } catch (error) {
+    console.error('Error in POST:', error);
+    return NextResponse.json(
+      { error: 'Internal Server Error', details: (error as Error).message },
+      { status: 500 }
+    );
+  }
 }

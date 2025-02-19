@@ -24,8 +24,24 @@ export default function Home() {
 
   useEffect(() => {
     fetch('/api/debts')
-      .then(res => res.json())
-      .then(setDebts);
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Failed to fetch debts');
+        }
+        return res.json();
+      })
+      .then(data => {
+        if (Array.isArray(data)) {
+          setDebts(data);
+        } else {
+          console.error('Expected array of debts but got:', data);
+          setDebts([]);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching debts:', error);
+        setDebts([]);
+      });
   }, []);
 
   const addDebt = async () => {
